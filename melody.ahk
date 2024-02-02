@@ -12,7 +12,7 @@
 ; event handlers
 $1::SelectSong()
 $2::PlaySong()
-$3::SetupSong()
+$8::SetupSong()
 
 $4::CloseApp()
 
