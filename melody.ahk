@@ -3,22 +3,25 @@
 ; 1: SELECT SONG
 ; 2: PLAY SONG
 ; 8: SETUP SONG
+; 9: RESET HAIR
 ; 4: STOP PROGRAM
 
-; notes: https://www.hooktheory.com/
+; notes: https://www.hooktheory.com/theorytab
 
 #Requires AutoHotkey v2.0
 
 ; event handlers
 $1::SelectSong()
 $2::PlaySong()
-$8::SetupSong()
+$8::SetupOrResetSong(false)
+$9::SetupOrResetSong(true)
 
 $4::CloseApp()
 
 song := ""
 
 ; functions
+
 SelectSong() {
     selectedFile := FileSelect("1", A_WorkingDir "\songs", "Select song", "Song file (*.json)")
     if selectedFile {
@@ -27,7 +30,7 @@ SelectSong() {
     }
 }
 
-SetupSong() {
+SetupOrResetSong(reset) {
     if !song {
         MsgBox("Invalid song file (1)")
         return
@@ -43,7 +46,17 @@ SetupSong() {
     for option in tuning {
         if option.Length == 2 {
             slot := option.Get(1)
+
             value := option.Get(2)
+			
+			if (reset) {
+				value := 24 - value
+			}
+
+			if value == 24 {
+				continue
+			}
+
 
             Send(slot)
 
