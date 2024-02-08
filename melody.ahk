@@ -10,6 +10,11 @@
 
 #Requires AutoHotkey v2.0
 
+CPS_LIMIT := -1
+
+; load config
+LoadConfig()
+
 ; event handlers
 $1::SelectSong()
 $2::PlaySong()
@@ -19,9 +24,10 @@ $9::SetupOrResetSong(true)
 $4::CloseApp()
 
 song := ""
+lastTimeMS := 0
+cps := 0
 
 ; functions
-
 SelectSong() {
     selectedFile := FileSelect("1", A_WorkingDir "\songs", "Select song", "Song file (*.json)")
     if selectedFile {
@@ -62,7 +68,7 @@ SetupOrResetSong(reset) {
 
             Loop(value) {
                 Sleep Random(500, 750)
-                MouseClick("left")
+                Click("left")
             }
         }
 
@@ -117,11 +123,39 @@ PlaySong() {
 PlayNote(slot) {
     Send(slot)
     Sleep(Random(25, 100))
-    MouseClick("right")
+    Click("right")
+}
+
+Click(buttonName) {
+	currentTimeMS := (a_hour * 3600 + a_min * 60 + a_sec) * 1000 + a_msec
+	global lastTimeMS
+
+	if Abs(currentTimeMS - lastTimeMS) >= 1000 {
+		cps := 0
+		lastTimeMS := currentTimeMS
+	}
+
+	global CPS_LIMIT
+	global cps
+
+	if cps == CPS_LIMIT {
+		return
+	}
+
+	cps++
+	MouseClick(buttonName)
 }
 
 CloseApp() {
     ExitApp()
+}
+
+LoadConfig() {
+    fileContent := FileRead(A_WorkingDir "\config.json")
+    config := Jxon_Load(&fileContent)
+	if config {
+		global CPS_LIMIT := config.Get("cps_limit")
+	}
 }
 
 ; JXON 
